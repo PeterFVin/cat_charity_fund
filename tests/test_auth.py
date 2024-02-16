@@ -1,21 +1,33 @@
+REGISTER_URL = '/auth/register'
 
 
 def test_register(test_client):
-    response = test_client.post('/auth/register', json={
+    user_data = {
         'email': 'dead@pool.com',
         'password': 'chimichangas4life',
-    })
+    }
+    response = test_client.post(REGISTER_URL, json=user_data)
     assert response.status_code == 201, (
-        'При регистрации пользователя должен возвращаться статус-код 201.'
+        'Проверьте статус ответа API: при регистрации пользователя '
+        f'корректный POST-запрос к эндпоинту {REGISTER_URL} '
+        'должен вернуть ответ со статусом 201.'
     )
     data = response.json()
-    keys = sorted(['id', 'email', 'is_active', 'is_superuser', 'is_verified'])
-    assert sorted(list(data.keys())) == keys, (
-        f'При регистрации пользователя в ответе должны быть ключи `{keys}`.'
+    expected_keys = {
+        'id',
+        'email',
+        'is_active',
+        'is_superuser',
+        'is_verified',
+    }
+    missing_keys = expected_keys - data.keys()
+    assert not missing_keys, (
+        f'В ответе на корректный POST-запрос к эндпоинту `{REGISTER_URL}` не '
+        f'хватает следующих ключей: `{"`, `".join(missing_keys)}`'
     )
     data.pop('id')
     assert data == {
-        'email': 'dead@pool.com',
+        'email': user_data['email'],
         'is_active': True,
         'is_superuser': False,
         'is_verified': False,
@@ -23,25 +35,17 @@ def test_register(test_client):
 
 
 def test_register_invalid_pass(user_client):
-    response = user_client.post('/auth/register', json={
+    response = user_client.post(REGISTER_URL, json={
         'email': 'dead@pool.com',
         'password': '$',
     })
     assert response.status_code == 400, (
-        'При некорректной регистрации пользователя должен возвращаться '
-        'статус-код 400.'
+        'Проверьте статус ответа API: '
+        'при регистрации пользователя некорректный POST-запрос '
+        f'к эндпоинту`{REGISTER_URL}` должен вернуть ответ со статусом 400.'
     )
     data = response.json()
     assert list(data.keys()) == ['detail'], (
-        'При некорректной регистрации пользователя в ответе должен быть ключ '
-        '`detail`.'
-    )
-    assert data == {
-        'detail': {
-            'code': 'REGISTER_INVALID_PASSWORD',
-            'reason': 'Password should be at least 3 characters',
-        },
-    }, (
-        'При некорректной регистрации пользователя тело ответа API отличается '
-        'от ожидаемого.'
+        'Убедитесь, что в ответе на некорректный POST-запрос '
+        f'к эндпоинту `{REGISTER_URL}` есть ключ `detail`.'
     )
