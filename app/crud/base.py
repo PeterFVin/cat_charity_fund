@@ -1,6 +1,10 @@
+from typing import Optional
+
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import User
 
 
 class CRUDBase:
@@ -29,15 +33,20 @@ class CRUDBase:
 
     async def create(
             self,
-            obj_in,
+            object_in,
             session: AsyncSession,
+            user: Optional[User] = None,
+            creation: bool = False,
     ):
-        obj_in_data = obj_in.dict()
-        db_obj = self.model(**obj_in_data)
-        session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
-        return db_obj
+        object_in_data = object_in.dict()
+        if user is not None:
+            object_in_data['user_id'] = user.id
+        db_object = self.model(**object_in_data)
+        session.add(db_object)
+        if not creation:
+            await session.commit()
+            await session.refresh(db_object)
+        return db_object
 
     async def update(
             self,
@@ -64,3 +73,12 @@ class CRUDBase:
         await session.delete(db_obj)
         await session.commit()
         return db_obj
+
+    async def get_incompleted(
+            self,
+            session: AsyncSession,
+    ):
+        db_objs = await session.execute(select(self.model).where(
+            self.model.fully_invested == 0
+        ).order_by(self.model.create_date))
+        return db_objs.scalars().all()

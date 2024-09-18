@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.endpoints.validators import (
     check_charity_project_exists,
+    check_charity_project_fields,
     check_delete_project_invested,
     check_delete_project_closed,
     check_name_duplicate,
@@ -12,6 +13,7 @@ from app.api.endpoints.validators import (
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charity_project_crud
+from app.crud.donation import donation_crud
 from app.schemas.charity_project import (
     CharityProjectCreate,
     CharityProjectDB,
@@ -35,17 +37,21 @@ async def create_new_charity_project(
         charity_project: CharityProjectCreate,
         session: AsyncSession = Depends(get_async_session),
 ):
-    if charity_project.name is None or charity_project.description is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=CHARITY_CREATE_ERROR_MESSAGE
-        )
+    check_charity_project_fields(charity_project)
     await check_name_duplicate(charity_project.name, session)
     new_charity_project = await charity_project_crud.create(
         charity_project,
-        session
+        session,
+        creation=True
     )
-    return await func_donation(session, new_charity_project)
+    incompleted_objects = await donation_crud.get_incompleted(session)
+    session.add_all(
+        func_donation(
+            new_charity_project,
+            incompleted_objects))
+    await session.commit()
+    await session.refresh(new_charity_project)
+    return new_charity_project
 
 
 @router.get(
@@ -76,7 +82,7 @@ async def partially_update_charity_project(
         await check_name_duplicate(obj_in.name, session)
     await check_update_project_closed(project_id, session)
     if obj_in.full_amount:
-        await check_update_project_invested(
+        check_update_project_invested(
             charity_project, obj_in.full_amount
         )
     return await charity_project_crud.update(

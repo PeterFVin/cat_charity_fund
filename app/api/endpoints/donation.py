@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_async_session
 from app.core.user import current_user, current_superuser
+from app.crud.charity_project import charity_project_crud
 from app.crud.donation import donation_crud
 from app.models import User
 from app.schemas.donation import DonationCreate, DonationDB, DonationGet
@@ -29,9 +30,16 @@ async def create_donation(
             detail=DONATION_CREATE_ERROR_MESSAGE
         )
     new_donation = await donation_crud.create(
-        donation, user, session
+        donation, session, user, creation=True
     )
-    return await func_donation(session, new_donation)
+    incompleted_objects = await charity_project_crud.get_incompleted(session)
+    session.add_all(
+        func_donation(
+            new_donation,
+            incompleted_objects))
+    await session.commit()
+    await session.refresh(new_donation)
+    return new_donation
 
 
 @router.get(
