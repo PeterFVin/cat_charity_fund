@@ -30,13 +30,13 @@ async def create_donation(
             detail=DONATION_CREATE_ERROR_MESSAGE
         )
     new_donation = await donation_crud.create(
-        donation, session, user, creation=True
+        donation, session, user, no_commit=True
     )
-    incompleted_objects = await charity_project_crud.get_incompleted(session)
+    new_donation.invested_amount = 0
     session.add_all(
         func_donation(
             new_donation,
-            incompleted_objects))
+            await charity_project_crud.get_incompleted(session)))
     await session.commit()
     await session.refresh(new_donation)
     return new_donation

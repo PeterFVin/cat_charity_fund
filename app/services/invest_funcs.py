@@ -1,14 +1,12 @@
 from datetime import datetime
 
-from app.models.base_model import Base_Project_Donation
+from app.models.base_model import BaseAbstractModel
 
 
 def func_donation(
-        target: Base_Project_Donation,
-        sources: list[Base_Project_Donation]) -> list[Base_Project_Donation]:
-    modified_objects = []
-    if target.invested_amount is None:
-        target.invested_amount = 0
+        target: BaseAbstractModel,
+        sources: list[BaseAbstractModel]) -> list[BaseAbstractModel]:
+    modified = []
     for source in sources:
         if target.fully_invested:
             break
@@ -16,7 +14,7 @@ def func_donation(
             source.full_amount - source.invested_amount,
             target.full_amount - target.invested_amount
         )
-        modified_objects.append(source)
+        modified.append(source)
         for operation in [target, source]:
             operation.invested_amount += rest_amount
             operation.fully_invested = (
@@ -25,4 +23,4 @@ def func_donation(
             if operation.fully_invested:
                 operation.close_date = datetime.now()
 
-    return modified_objects
+    return modified

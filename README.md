@@ -39,3 +39,8 @@ alembic upgrade head
 
 ```
 uvicorn app.main:app --reload
+
+Документация к проекту:
+
+http://127.0.0.1:8000/docs (Swagger)
+http://127.0.0.1:8000/redoc (Redoc)

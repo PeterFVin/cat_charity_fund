@@ -36,14 +36,14 @@ class CRUDBase:
             object_in,
             session: AsyncSession,
             user: Optional[User] = None,
-            creation: bool = False,
+            no_commit: bool = False,
     ):
         object_in_data = object_in.dict()
         if user is not None:
             object_in_data['user_id'] = user.id
         db_object = self.model(**object_in_data)
         session.add(db_object)
-        if not creation:
+        if not no_commit:
             await session.commit()
             await session.refresh(db_object)
         return db_object

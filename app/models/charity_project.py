@@ -1,8 +1,8 @@
 from sqlalchemy import Column, String, Text
 
-from app.models.base_model import Base_Project_Donation
+from app.models.base_model import BaseAbstractModel
 
 
-class CharityProject(Base_Project_Donation):
+class CharityProject(BaseAbstractModel):
     name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=False)

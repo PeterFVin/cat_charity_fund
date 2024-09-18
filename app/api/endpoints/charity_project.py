@@ -42,13 +42,13 @@ async def create_new_charity_project(
     new_charity_project = await charity_project_crud.create(
         charity_project,
         session,
-        creation=True
+        no_commit=True
     )
-    incompleted_objects = await donation_crud.get_incompleted(session)
+    new_charity_project.invested_amount = 0
     session.add_all(
         func_donation(
             new_charity_project,
-            incompleted_objects))
+            await donation_crud.get_incompleted(session)))
     await session.commit()
     await session.refresh(new_charity_project)
     return new_charity_project
