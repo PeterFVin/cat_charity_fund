@@ -13,10 +13,15 @@
  - Pydantic
  - Asyncio
 
- ### Автор проекта:
+### Автор проекта:
 
 Петр Виноградов, python plus, когорта 31+
 [Петр Виноградов](https://github.com/PeterFVin)
+
+### Документация к проекту:
+
+[Swagger](http://127.0.0.1:8000/docs)
+[Redoc](http://127.0.0.1:8000/redoc)
 
 ### Как запустить проект:
 
@@ -39,8 +44,3 @@ alembic upgrade head
 
 ```
 uvicorn app.main:app --reload
-
-Документация к проекту:
-
-[Swagger](http://127.0.0.1:8000/docs)
-[Redoc](http://127.0.0.1:8000/redoc)
