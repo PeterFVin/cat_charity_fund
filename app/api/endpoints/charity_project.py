@@ -44,7 +44,6 @@ async def create_new_charity_project(
         session,
         no_commit=True
     )
-    new_charity_project.invested_amount = 0
     session.add_all(
         func_donation(
             new_charity_project,

@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from app.models.base_model import BaseAbstractModel
+from app.models.base_model import BaseTranscationModel
 
 
 def func_donation(
-        target: BaseAbstractModel,
-        sources: list[BaseAbstractModel]) -> list[BaseAbstractModel]:
+        target: BaseTranscationModel,
+        sources: list[BaseTranscationModel]) -> list[BaseTranscationModel]:
     modified = []
     for source in sources:
         if target.fully_invested:

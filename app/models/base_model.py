@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, Integer
 from app.core.db import Base
 
 
-class BaseAbstractModel(Base):
+class BaseTranscationModel(Base):
     """Базовая абстрактная модель для моделей CharityProject и Donation."""
     __abstract__ = True
 
@@ -13,7 +13,6 @@ class BaseAbstractModel(Base):
                          CheckConstraint('full_amount > 0'),
                          nullable=False)
     invested_amount = Column(Integer,
-                             CheckConstraint('invested_amount >= 0'),
                              default=0,
                              nullable=False)
     fully_invested = Column(Boolean, default=False)
@@ -21,6 +20,8 @@ class BaseAbstractModel(Base):
     close_date = Column(DateTime)
 
     __table_args__ = (
+        CheckConstraint('invested_amount >= 0',
+                        name='invested_ge_zero'),
         CheckConstraint('invested_amount <= full_amount',
                         name='invested_le_full_amount'),
     )

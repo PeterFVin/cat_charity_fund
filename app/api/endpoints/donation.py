@@ -32,7 +32,6 @@ async def create_donation(
     new_donation = await donation_crud.create(
         donation, session, user, no_commit=True
     )
-    new_donation.invested_amount = 0
     session.add_all(
         func_donation(
             new_donation,
